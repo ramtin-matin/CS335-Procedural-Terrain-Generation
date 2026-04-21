@@ -17,11 +17,6 @@ uniform float uFogFar;
 out vec4 FragColor;
 
 void main() {
-    if (!uUseHeightColoring) {
-        FragColor = vec4(uBaseColor, 1.0);
-        return;
-    }
-
     float heightRange = max(uMaxHeight - uMinHeight, 0.0001);
     float heightT = clamp((vHeight - uMinHeight) / heightRange, 0.0, 1.0);
 
@@ -33,6 +28,9 @@ void main() {
     vec3 terrainColor = mix(lowColor, midColor, smoothstep(0.08, 0.42, heightT));
     terrainColor = mix(terrainColor, highColor, smoothstep(0.48, 0.78, heightT));
     terrainColor = mix(terrainColor, peakColor, smoothstep(0.84, 1.00, heightT));
+    if (!uUseHeightColoring) {
+        terrainColor = uBaseColor;
+    }
 
     vec3 dpdx = dFdx(vWorldPosition);
     vec3 dpdy = dFdy(vWorldPosition);
