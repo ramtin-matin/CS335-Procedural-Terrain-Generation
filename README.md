@@ -9,6 +9,7 @@ Current coverage:
 - Procedural terrain density based on Perlin-style noise
 - Live terrain controls for noise strength, noise scale, base height, and ground level
 - Regenerate button for new terrain seeds and a wireframe toggle for mesh inspection
+- Gradient sky background, stronger terrain lighting, and subtle distance fog
 - Keyboard and mouse camera controls for exploring the terrain
 
 ## Project Layout
@@ -20,7 +21,8 @@ Current coverage:
 - `include/Shader.h` / `src/Shader.cpp` - small shader loading and uniform helper
 - `include/Terrain.h` / `src/Terrain.cpp` - grid mesh generation and terrain height sampling
 - `src/main.cpp` - GLFW window setup, GLAD initialization, camera input, ImGui controls, and rendering loop
-- `shaders/basic.vert` / `shaders/basic.frag` - simple shaders for terrain rendering
+- `shaders/basic.vert` / `shaders/basic.frag` - terrain shading, color blending, and fog
+- `shaders/sky.vert` / `shaders/sky.frag` - minimal fullscreen gradient sky
 - `external/README.md` - expected layout for local GLFW, GLM, GLAD, and ImGui folders
 
 ## Dependency Setup

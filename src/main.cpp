@@ -147,19 +147,41 @@ void processMouseLook(GLFWwindow* window, Camera& camera, bool& firstMouse, doub
 }
 
 void renderScene(const Shader& shader, const RenderMesh& mesh, const glm::mat4& model,
-                 const glm::mat4& view, const glm::mat4& projection) {
+                 const glm::mat4& view, const glm::mat4& projection, const glm::vec3& cameraPosition,
+                 const glm::vec3& skyBottomColor, const glm::vec3& skyTopColor) {
     shader.use();
     shader.setMat4("uModel", model);
     shader.setMat4("uView", view);
     shader.setMat4("uProjection", projection);
+    shader.setVec3("uCameraPosition", cameraPosition);
     shader.setBool("uUseHeightColoring", true);
     shader.setFloat("uMinHeight", mesh.minHeight);
     shader.setFloat("uMaxHeight", mesh.maxHeight);
     shader.setVec3("uBaseColor", glm::vec3(0.24f, 0.58f, 0.31f));
+    shader.setVec3("uSkyBottomColor", skyBottomColor);
+    shader.setVec3("uSkyTopColor", skyTopColor);
+    shader.setFloat("uFogNear", 12.0f);
+    shader.setFloat("uFogFar", 42.0f);
 
     glBindVertexArray(mesh.vao);
     glDrawElements(GL_TRIANGLES, mesh.indexCount, GL_UNSIGNED_INT, nullptr);
     glBindVertexArray(0);
+}
+
+void renderSky(const Shader& shader, unsigned int skyVao, const glm::vec3& skyBottomColor, const glm::vec3& skyTopColor) {
+    glDepthMask(GL_FALSE);
+    glDisable(GL_DEPTH_TEST);
+
+    shader.use();
+    shader.setVec3("uSkyBottomColor", skyBottomColor);
+    shader.setVec3("uSkyTopColor", skyTopColor);
+
+    glBindVertexArray(skyVao);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glBindVertexArray(0);
+
+    glEnable(GL_DEPTH_TEST);
+    glDepthMask(GL_TRUE);
 }
 
 }  // namespace
@@ -204,6 +226,10 @@ int main() {
 
         const std::string shaderDirectory = SHADER_DIR;
         Shader shader(shaderDirectory + "/basic.vert", shaderDirectory + "/basic.frag");
+        Shader skyShader(shaderDirectory + "/sky.vert", shaderDirectory + "/sky.frag");
+
+        unsigned int skyVao = 0;
+        glGenVertexArrays(1, &skyVao);
 
         Camera camera(glm::vec3(0.0f, 3.5f, 11.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, -14.0f);
 
@@ -282,8 +308,12 @@ int main() {
             int displayHeight = 0;
             glfwGetFramebufferSize(window, &displayWidth, &displayHeight);
             glViewport(0, 0, displayWidth, displayHeight);
-            glClearColor(0.53f, 0.77f, 0.92f, 1.0f);
+            const glm::vec3 skyBottomColor(0.77f, 0.88f, 0.95f);
+            const glm::vec3 skyTopColor(0.30f, 0.54f, 0.78f);
+            glClearColor(skyBottomColor.r, skyBottomColor.g, skyBottomColor.b, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            renderSky(skyShader, skyVao, skyBottomColor, skyTopColor);
             glPolygonMode(GL_FRONT_AND_BACK, wireframeEnabled ? GL_LINE : GL_FILL);
 
             renderScene(
@@ -291,8 +321,13 @@ int main() {
                 terrainMesh,
                 glm::mat4(1.0f),
                 camera.getViewMatrix(),
-                buildProjectionMatrix(window, camera.getZoom())
+                buildProjectionMatrix(window, camera.getZoom()),
+                camera.getPosition(),
+                skyBottomColor,
+                skyTopColor
             );
+
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
             ImGui::Render();
             ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -301,6 +336,7 @@ int main() {
         }
 
         destroyMesh(terrainMesh);
+        glDeleteVertexArrays(1, &skyVao);
 
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplGlfw_Shutdown();

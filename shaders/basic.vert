@@ -8,10 +8,14 @@ uniform mat4 uProjection;
 
 out vec3 vWorldPosition;
 out float vHeight;
+out float vViewDistance;
+
+uniform vec3 uCameraPosition;
 
 void main() {
     vec4 worldPosition = uModel * vec4(aPosition, 1.0);
     vWorldPosition = worldPosition.xyz;
     vHeight = worldPosition.y;
+    vViewDistance = length(uCameraPosition - worldPosition.xyz);
     gl_Position = uProjection * uView * worldPosition;
 }

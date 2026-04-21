@@ -20,6 +20,7 @@ public:
     );
 
     glm::mat4 getViewMatrix() const;
+    const glm::vec3& getPosition() const;
 
     void processKeyboard(CameraMovement direction, float deltaTime);
     void processMouseMovement(float xOffset, float yOffset, bool constrainPitch = true);
