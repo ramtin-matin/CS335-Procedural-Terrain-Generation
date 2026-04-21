@@ -16,10 +16,12 @@ public:
     float getNoiseStrength() const;
     float getNoiseScale() const;
     float getBaseHeight() const;
+    float getGroundLevel() const;
 
     void setNoiseStrength(float noiseStrength);
     void setNoiseScale(float noiseScale);
     void setBaseHeight(float baseHeight);
+    void setGroundLevel(float groundLevel);
     void regenerate();
 
 private:
@@ -43,6 +45,7 @@ private:
     float mNoiseStrength = 2.2f;
     float mNoiseScale = 0.10f;
     float mBaseHeight = -1.4f;
+    float mGroundLevel = -3.4f;
     float mMinHeight = 0.0f;
     float mMaxHeight = 0.0f;
     std::vector<GridPoint> mScalarField;

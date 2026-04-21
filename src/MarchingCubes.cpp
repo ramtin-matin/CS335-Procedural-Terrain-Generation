@@ -387,6 +387,10 @@ float MarchingCubes::getBaseHeight() const {
     return mBaseHeight;
 }
 
+float MarchingCubes::getGroundLevel() const {
+    return mGroundLevel;
+}
+
 void MarchingCubes::setNoiseStrength(float noiseStrength) {
     mNoiseStrength = noiseStrength;
 }
@@ -397,6 +401,10 @@ void MarchingCubes::setNoiseScale(float noiseScale) {
 
 void MarchingCubes::setBaseHeight(float baseHeight) {
     mBaseHeight = baseHeight;
+}
+
+void MarchingCubes::setGroundLevel(float groundLevel) {
+    mGroundLevel = groundLevel;
 }
 
 void MarchingCubes::regenerate() {
@@ -519,8 +527,12 @@ float MarchingCubes::sampleDensity(const glm::vec3& position) const {
     const float edgeDistance = glm::length(normalizedPosition);
     terrainHeight -= std::max(0.0f, edgeDistance - 0.55f) * 8.0f;
 
-    // Negative values are empty space, positive values are solid terrain.
-    return terrainHeight - position.y;
+    const float terrainSurfaceDensity = terrainHeight - position.y;
+    const float groundedBaseDensity = mGroundLevel - position.y;
+
+    // Keep the terrain solid below the noise surface and also below a lower base plane.
+    // Using the larger density value blends the surface into a grounded landmass.
+    return std::max(terrainSurfaceDensity, groundedBaseDensity);
 }
 
 glm::vec3 MarchingCubes::interpolateVertex(const GridPoint& start, const GridPoint& end) const {

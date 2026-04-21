@@ -7,7 +7,7 @@ Current coverage:
 - OpenGL starter window
 - Marching Cubes mesh extraction from a scalar field
 - Procedural terrain density based on Perlin-style noise
-- Live terrain controls for noise strength, noise scale, and base height
+- Live terrain controls for noise strength, noise scale, base height, and ground level
 - Keyboard and mouse camera controls for exploring the terrain
 
 ## Project Layout
@@ -84,7 +84,9 @@ cmake --build build --config Release
 The terrain surface comes from `MarchingCubes::sampleDensity()` in `src/MarchingCubes.cpp`.
 
 - `terrainHeight` is built from broad low-frequency noise plus smaller high-frequency detail noise
-- `density = terrainHeight - y`
+- the terrain is grounded by blending that surface with a lower base plane
+- the final density is the larger of:
+  `terrainHeight - y` and `groundLevel - y`
 - positive density means solid terrain
 - negative density means empty space
 

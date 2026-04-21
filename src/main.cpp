@@ -211,6 +211,7 @@ int main() {
         float noiseStrength = marchingCubes.getNoiseStrength();
         float noiseScale = marchingCubes.getNoiseScale();
         float baseHeight = marchingCubes.getBaseHeight();
+        float groundLevel = marchingCubes.getGroundLevel();
         RenderMesh terrainMesh = uploadMesh(
             marchingCubes.getMeshData(),
             marchingCubes.getMinHeight(),
@@ -242,6 +243,7 @@ int main() {
             terrainChanged |= ImGui::SliderFloat("Noise Strength", &noiseStrength, 0.20f, 4.50f, "%.2f");
             terrainChanged |= ImGui::SliderFloat("Noise Scale", &noiseScale, 0.03f, 0.35f, "%.3f");
             terrainChanged |= ImGui::SliderFloat("Base Height", &baseHeight, -4.0f, 2.0f, "%.2f");
+            terrainChanged |= ImGui::SliderFloat("Ground Level", &groundLevel, -4.0f, -0.5f, "%.2f");
             ImGui::Text("Triangles: %d", terrainMesh.indexCount / 3);
             ImGui::Text("W/A/S/D move");
             ImGui::Text("Hold right mouse button to look around");
@@ -251,6 +253,7 @@ int main() {
                 marchingCubes.setNoiseStrength(noiseStrength);
                 marchingCubes.setNoiseScale(noiseScale);
                 marchingCubes.setBaseHeight(baseHeight);
+                marchingCubes.setGroundLevel(groundLevel);
                 marchingCubes.regenerate();
                 rebuildMesh(
                     terrainMesh,
