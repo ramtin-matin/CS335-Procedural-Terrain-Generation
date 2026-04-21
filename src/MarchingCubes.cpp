@@ -5,6 +5,7 @@
 #include <cmath>
 #include <cstddef>
 #include <limits>
+#include <random>
 
 #include <glm/geometric.hpp>
 #include <glm/gtc/noise.hpp>
@@ -353,6 +354,36 @@ const int kTriangleTable[256][16] = {
 
 }  // namespace
 
+namespace {
+
+unsigned int makeRandomSeed() {
+    static std::mt19937 generator(std::random_device{}());
+    static std::uniform_int_distribution<unsigned int> distribution(1u, std::numeric_limits<unsigned int>::max());
+    return distribution(generator);
+}
+
+unsigned int mixSeed(unsigned int value) {
+    value ^= value >> 16;
+    value *= 0x7feb352du;
+    value ^= value >> 15;
+    value *= 0x846ca68bu;
+    value ^= value >> 16;
+    return value;
+}
+
+float seedComponent(unsigned int seed) {
+    return static_cast<float>(mixSeed(seed) & 0xffffu) * 0.03125f;
+}
+
+glm::vec2 buildSeedOffset(unsigned int seed) {
+    return glm::vec2(
+        seedComponent(seed ^ 0xa341316cu),
+        seedComponent(seed ^ 0xc8013ea4u)
+    );
+}
+
+}  // namespace
+
 MarchingCubes::MarchingCubes(unsigned int width, unsigned int height, unsigned int depth, float cellSize, float isoLevel)
     : mWidth(width),
       mHeight(height),
@@ -391,6 +422,10 @@ float MarchingCubes::getGroundLevel() const {
     return mGroundLevel;
 }
 
+unsigned int MarchingCubes::getSeed() const {
+    return mSeed;
+}
+
 void MarchingCubes::setNoiseStrength(float noiseStrength) {
     mNoiseStrength = noiseStrength;
 }
@@ -405,6 +440,14 @@ void MarchingCubes::setBaseHeight(float baseHeight) {
 
 void MarchingCubes::setGroundLevel(float groundLevel) {
     mGroundLevel = groundLevel;
+}
+
+void MarchingCubes::setSeed(unsigned int seed) {
+    mSeed = seed == 0u ? 1u : seed;
+}
+
+void MarchingCubes::generateNewSeed() {
+    mSeed = makeRandomSeed();
 }
 
 void MarchingCubes::regenerate() {
@@ -511,13 +554,16 @@ float MarchingCubes::sampleDensity(const glm::vec3& position) const {
         static_cast<float>(mWidth) * mCellSize * 0.5f,
         static_cast<float>(mDepth) * mCellSize * 0.5f
     );
+    const glm::vec2 seedOffset = buildSeedOffset(mSeed);
 
-    const float broadNoise = glm::perlin(horizontalPosition * mNoiseScale);
-    const float detailNoise = glm::perlin(horizontalPosition * (mNoiseScale * 2.5f) + glm::vec2(11.7f, -6.3f));
+    const float shapeNoise = glm::perlin(horizontalPosition * (mNoiseScale * 0.5f) + seedOffset * 0.35f);
+    const float broadNoise = glm::perlin(horizontalPosition * mNoiseScale + seedOffset);
+    const float detailNoise = glm::perlin(horizontalPosition * (mNoiseScale * 2.2f) + seedOffset * 1.8f + glm::vec2(11.7f, -6.3f));
 
     float terrainHeight = mBaseHeight;
-    terrainHeight += broadNoise * mNoiseStrength;
-    terrainHeight += detailNoise * (mNoiseStrength * 0.35f);
+    terrainHeight += shapeNoise * (mNoiseStrength * 0.45f);
+    terrainHeight += broadNoise * (mNoiseStrength * 0.75f);
+    terrainHeight += detailNoise * (mNoiseStrength * 0.18f);
 
     // Pull the terrain down near the border so the generated chunk stays inside the volume.
     const glm::vec2 normalizedPosition(

@@ -212,6 +212,8 @@ int main() {
         float noiseScale = marchingCubes.getNoiseScale();
         float baseHeight = marchingCubes.getBaseHeight();
         float groundLevel = marchingCubes.getGroundLevel();
+        unsigned int terrainSeed = marchingCubes.getSeed();
+        bool wireframeEnabled = false;
         RenderMesh terrainMesh = uploadMesh(
             marchingCubes.getMeshData(),
             marchingCubes.getMinHeight(),
@@ -240,16 +242,29 @@ int main() {
             ImGui::SetNextWindowPos(ImVec2(18.0f, 18.0f), ImGuiCond_Once);
             ImGui::Begin("Terrain Controls", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
             bool terrainChanged = false;
+            bool seedChanged = false;
             terrainChanged |= ImGui::SliderFloat("Noise Strength", &noiseStrength, 0.20f, 4.50f, "%.2f");
             terrainChanged |= ImGui::SliderFloat("Noise Scale", &noiseScale, 0.03f, 0.35f, "%.3f");
             terrainChanged |= ImGui::SliderFloat("Base Height", &baseHeight, -4.0f, 2.0f, "%.2f");
             terrainChanged |= ImGui::SliderFloat("Ground Level", &groundLevel, -4.0f, -0.5f, "%.2f");
+
+            if (ImGui::Button("Regenerate Terrain")) {
+                marchingCubes.generateNewSeed();
+                terrainSeed = marchingCubes.getSeed();
+                seedChanged = true;
+            }
+
+            ImGui::SameLine();
+            ImGui::Text("Seed: %u", terrainSeed);
+
+            ImGui::Checkbox("Wireframe", &wireframeEnabled);
+            ImGui::Separator();
             ImGui::Text("Triangles: %d", terrainMesh.indexCount / 3);
-            ImGui::Text("W/A/S/D move");
-            ImGui::Text("Hold right mouse button to look around");
+            ImGui::TextDisabled("W/A/S/D move");
+            ImGui::TextDisabled("Hold right mouse button to look around");
             ImGui::End();
 
-            if (terrainChanged) {
+            if (terrainChanged || seedChanged) {
                 marchingCubes.setNoiseStrength(noiseStrength);
                 marchingCubes.setNoiseScale(noiseScale);
                 marchingCubes.setBaseHeight(baseHeight);
@@ -269,7 +284,7 @@ int main() {
             glViewport(0, 0, displayWidth, displayHeight);
             glClearColor(0.53f, 0.77f, 0.92f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            glPolygonMode(GL_FRONT_AND_BACK, wireframeEnabled ? GL_LINE : GL_FILL);
 
             renderScene(
                 shader,

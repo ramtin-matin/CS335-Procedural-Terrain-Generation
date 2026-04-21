@@ -6,9 +6,12 @@ uniform mat4 uModel;
 uniform mat4 uView;
 uniform mat4 uProjection;
 
+out vec3 vWorldPosition;
 out float vHeight;
 
 void main() {
-    vHeight = aPosition.y;
-    gl_Position = uProjection * uView * uModel * vec4(aPosition, 1.0);
+    vec4 worldPosition = uModel * vec4(aPosition, 1.0);
+    vWorldPosition = worldPosition.xyz;
+    vHeight = worldPosition.y;
+    gl_Position = uProjection * uView * worldPosition;
 }

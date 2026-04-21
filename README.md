@@ -8,6 +8,7 @@ Current coverage:
 - Marching Cubes mesh extraction from a scalar field
 - Procedural terrain density based on Perlin-style noise
 - Live terrain controls for noise strength, noise scale, base height, and ground level
+- Regenerate button for new terrain seeds and a wireframe toggle for mesh inspection
 - Keyboard and mouse camera controls for exploring the terrain
 
 ## Project Layout
@@ -77,6 +78,8 @@ cmake --build build --config Release
 - `W / A / S / D` move the camera
 - Hold the right mouse button and move the mouse to look around
 - Use the terrain sliders to rebuild the marching cubes terrain
+- Use `Regenerate Terrain` to create a new seeded variation
+- Toggle `Wireframe` to inspect the generated mesh
 - `Esc` closes the app.
 
 ## Terrain Density
@@ -84,6 +87,7 @@ cmake --build build --config Release
 The terrain surface comes from `MarchingCubes::sampleDensity()` in `src/MarchingCubes.cpp`.
 
 - `terrainHeight` is built from broad low-frequency noise plus smaller high-frequency detail noise
+- the current seed offsets the noise sampling so each regenerate button press makes a new terrain variation
 - the terrain is grounded by blending that surface with a lower base plane
 - the final density is the larger of:
   `terrainHeight - y` and `groundLevel - y`
