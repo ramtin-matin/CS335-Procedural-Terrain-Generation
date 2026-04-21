@@ -1,0 +1,9 @@
+{
+	"InstallScripts" : 
+	[
+		"/Users/ramtinmatin/CS335 Procedural Terrain Generation/CS335-Procedural-Terrain-Generation/build_local/cmake_install.cmake",
+		"/Users/ramtinmatin/CS335 Procedural Terrain Generation/CS335-Procedural-Terrain-Generation/build_local/external/glfw/cmake_install.cmake",
+		"/Users/ramtinmatin/CS335 Procedural Terrain Generation/CS335-Procedural-Terrain-Generation/build_local/external/glfw/src/cmake_install.cmake"
+	],
+	"Parallel" : false
+}
